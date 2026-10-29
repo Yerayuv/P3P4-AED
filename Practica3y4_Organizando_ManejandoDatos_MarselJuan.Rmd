@@ -447,6 +447,11 @@ Incorpora una nueva variable a `flights` denominado `Full_Date` que sea de tipo 
 
 ```{r }
 
+#Utilizamos mutate para crear la columna, obtenemos la informacion de las 3 variables ya existentes y creamos la cadena con paste. A continuacion utilizamos select con el signo menos para quitar la información repetida
+
+flights <- flights %>%
+  mutate(Full_Date = paste(day, month, year, sep = "-")) %>%
+  select(-year, -month, -day)
 
 ```
 
