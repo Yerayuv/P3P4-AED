@@ -361,7 +361,7 @@ Vamos a cargar el conjunto de datos `VuelosNY.Rdata` que contiene dos data frame
 
 library(dplyr)
 #library(dbplyr)
-rm(list=ls())
+#rm(list=ls())
 load("./data/VuelosNY.Rdata")
 ```
 
@@ -539,7 +539,15 @@ table1_reconstruida
 Consigue un data frame denominado `Distance_Manufacturer_model` que contenga 4 columnas (`tailnum`,`Total_distance`, `manufacturer` y `model`) ordenado de mayor a menor en base a la variable `Total_distance`. Para ello une los data frames `Distances_plane` (calculado en el ejercicio anterior y que contiene las distancias totales) y `planes` (que contiene los datos de cada modelo de avión). La variable que te permitirá unir ambos data frames es `tailnum`. A continuación deberás ordenar, en orden descendente de la variable `Total_distance` el data frame resultante. Finalmente selecciona las variables que tiene que contener la tabla final (`Total_distance`, `manufacturer` y `model`). Utiliza el operador pipe para enlazar las funciones.
 
 ```{r }
+#hacemos un left join de los dos dataframes por matricula, para despues seleccionar las 4 variables que queremos y quedarnos con ellas primero antes de ordenar. Este orden es el mejor a menos que queramos ordenar por una variable que luego no queremos en el dataframe final
 
+Distance_Manufacturer_model <- Distances_plane %>%
+  left_join(planes, by = "tailnum") %>%
+  select(tailnum, Total_distance, manufacturer, model)%>%
+  arrange(desc(Total_distance))
+
+Distance_Manufacturer_model
+  
 ```
 
 ### Ejercicio Extra 4
