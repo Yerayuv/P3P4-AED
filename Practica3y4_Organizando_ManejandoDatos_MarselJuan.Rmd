@@ -418,6 +418,9 @@ flights.f
 Reasigna los nombres de los data frames `planes.f` y `flights.f` a los nombres originales `planes` y `flights`.
 
 ```{r }
+#Para reasignar los nombres debemos simplemente reasignar las variables con <-
+planes <- planes.f
+flights <- flights.f
 
 ```
 
