@@ -405,7 +405,11 @@ planes.f
 Crea un data frame denominado `flights.f` que contenga los vuelos que involucren a los aviones presentes en el data frame `planes.f`. Para ello utiliza algunas de las funciones de **XXX_join** y la variable `tailnum` que es común en ambos data frames.
 
 ```{r }
+#para este caso nos viene bien la funcion semi_join, que normalmente nos dice las filas que se van a unir si hacemos un join. En este caso, justo queremos ver esas filas de flights.
 
+flights.f <- flights %>%semi_join(planes.f, by = "tailnum")
+
+flights.f
 
 ```
 
