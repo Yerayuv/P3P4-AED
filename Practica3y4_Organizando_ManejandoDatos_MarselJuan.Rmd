@@ -432,7 +432,13 @@ Existen variables que, a priori, no tienen demasiado interés para el estudio qu
 -   En el data frame `planes` quédate con todas las variables excepto `speed` y `type`.
 
 ```{r }
+#con select y un menos podemos quitar las variables que queramos. Añadimos el matches y la expresión regular para no tener que escribir todos los nombres a mano. Hay que ejecutar la celda anterior antes de ejecutar esta cada vez que se quiera volver a ejecutar
 
+flights <- flights %>%
+  select(-matches("(time$|^time_hour$)"))
+
+planes <- planes %>%
+  select(-speed, -type)
 ```
 
 ### Ejercicio 10
