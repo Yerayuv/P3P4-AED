@@ -516,7 +516,19 @@ Esto se puede hacer fácilmente con las librerías `plyr` y `dplyr`.
 En la librería *tidyr* hay varios conjuntos de datos. **table1** es un conjunto *tidy* pero **table5** no lo es. Realiza las operaciones necesarias para obtener **table1** a partir de **table5**. También deben coincidir los tipos de datos de las columnas.
 
 ```{r}
+table1
 
+table5
+
+#Partimos de table5, primero unimos el siglo y el año para crear la columna año. A continuacion hacemos justo lo contrario para separar rate en cases y population con un separate, y finalmente utilizamos mutate para cambiar los tipos de dato a enteros
+
+table1_reconstruida <- table5 %>%
+  unite(col = "year", century, year, sep = "", remove = TRUE) %>%
+  separate(col = rate, into = c("cases", "population"), sep = "/") %>%
+  mutate(year = as.integer(year),cases = as.integer(cases), population = as.integer(population))
+
+
+table1_reconstruida
 
 ```
 
