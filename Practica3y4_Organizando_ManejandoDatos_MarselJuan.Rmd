@@ -484,7 +484,18 @@ Opcionalmente se puede crear un identificador, `id`, asociado al nombre de la ca
 
 ```{r}
 
+#Creamos el primer dataframe seleccionando las 3 variables, eliminando en la siguiente capa duplicados con unique y finalmente creando con mutate una nueva columna de identificador
 
+canciones <- billboard_tidy %>%
+  select(artist, track, time) %>%
+  unique() %>%
+  mutate(id = row_number())
+
+# aqui nos aprovechamos de haber creado el identificador previamente en canciones y hacemos un left join para incorporarlo. Luego simplemente eliminamos las variables que no necesitamos con select
+
+ranking <- billboard_tidy %>%
+  left_join(canciones, by = c("artist", "track", "time")) %>%
+  select(id, week, rank, date)
 
 ```
 
