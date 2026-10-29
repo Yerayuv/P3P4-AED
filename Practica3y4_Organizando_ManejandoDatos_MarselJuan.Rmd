@@ -391,16 +391,12 @@ planes.f <- planes %>%
   filter(!grepl("mcdonn?ell\\s+douglas", manufacturer, ignore.case = TRUE)) %>%
   filter(between(seats, 90, 210))
 
-
+#ahora con mutate hacemos que cualquier manufacter que contenga la cadena airbus pase a llamarse AIRBUS COMP
 
 planes.f <- planes.f %>%
-  mutate(
-    manufacturer = if_else(
-      grepl("airbus", manufacturer, ignore.case = TRUE), 
-      "AIRBUS COMP", 
-      manufacturer
-    )
-  )
+  mutate(manufacturer = if_else(grepl("airbus", manufacturer, ignore.case = TRUE), "AIRBUS COMP", manufacturer))
+
+planes.f
 
 ```
 
