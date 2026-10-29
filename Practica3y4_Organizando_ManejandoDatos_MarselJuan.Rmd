@@ -203,7 +203,13 @@ Para convertir este conjunto a formato *tidy* tendremos que agrupar todas las co
 Convierte el dataset `pew_religion` a formato *tidy* usando `gather`. La columna `income` debe contener una variable de tipo `factor`.
 
 ```{r}
+load('data/pew_religion.Rdata')
 
+pew_tidy <- pew_religion %>%
+  gather(key = "income", value = "frequency", -religion) %>%
+  mutate(income = as.factor(income))
+
+pew_tidy
 
 ```
 
@@ -212,6 +218,10 @@ Otro ejemplo usando el conjunto de datos `Billboard` que muestra cuando una canc
 ```{r load billboard}
 load('data/billboard.Rdata')
 head(raw[, 1:12])
+billboard_tidy <- raw %>%
+  gather(key = "week", value = "rank", wk1:wk76)
+
+billboard_tidy
 ```
 
 La posición (*ranking*) de cada canción en cada semana después de haber entrado en el Top 100 se almacena en las columnas `wk1` a `wk76` (ver `str(raw)`). Si un tema sale del Top 100 antes de 76 semanas se rellenan los datos con NA's.
@@ -225,7 +235,15 @@ Obtén la versión *tidy* de este conjunto de datos usando `pivot_longer`.
 Consejo: puedes eliminar el prefijo `wk` de las semanas mediante el argumento `names_prefix`. Opcionalmente puedes crear una columna `date` a partir de `date.entered`, sumando las semanas transcurridas desde la fecha de entrada en lista.
 
 ```{r}
+load('data/billboard.Rdata')
 
+billboard_tidy <- raw %>%
+  pivot_longer(cols = wk1:wk76, names_to = "week",values_to = "rank",
+    names_prefix = "wk",values_drop_na = TRUE
+  ) %>%
+  mutate(week = as.numeric(week), date = as.Date(date.entered) + weeks(week - 1))
+
+billboard_tidy
 
 ```
 
@@ -236,6 +254,18 @@ El conjunto de datos `tuberculosis`, de la *World Health Organization*, presenta
 ```{r load TB}
 load('data/tb.Rdata')
 head(raw[, 1:16])
+
+#Vamos a juntar primero todas las columnas en solo dos, una que te diga lo que antes era la variable, y luego el valor, para luego dividir en edad y sexo con separate por el primer caracter
+
+tb_tidy <- raw %>%
+  pivot_longer(cols = starts_with("m") | starts_with("f"),names_to = "col_temporal",values_to = "cases",values_drop_na = TRUE) %>%
+  separate(
+    col = col_temporal,
+    into = c("sexo", "edad"),
+    sep = 1
+  )
+
+tb_tidy
 ```
 
 Podemos ver como efectivamente en una columna tenemos dos variables juntas, el sexo y el rango de edad. Por ejemplo, en `m014` la `m` hace referencia al sexo y `014` al rango de edad, dos variables que deberían estar separadas.
@@ -247,7 +277,13 @@ Para pasar a formato *tidy* necesitamos realizar dos operaciones en este caso. E
 Convierte el conjunto de datos TB en *tidy* utilizando `gather` y `separate`.
 
 ```{r}
+load('data/tb.Rdata')
+#Hacemos lo mismo que antes pero esta vez con gather
 
+tb_tidy <- raw %>%
+  gather(key = "temporal", value = "cases", m014:fu, na.rm = TRUE) %>%
+  separate(col = temporal, into = c("sexo", "edad"), sep = 1)
+tb_tidy
 ```
 
 ## Variables almacenadas tanto en filas como en columnas
@@ -257,6 +293,15 @@ Esta es la forma más complicada de datos desordenados, y es lo que ocurre en el
 ```{r load weather}
 load('data/weather.Rdata')
 head(raw[, 1:20])
+
+#primero juntamos las columnas con pivot longer, luego utilizamos mutate para quitar la d inicial de los dias y hacerlo numerico, y finalmente con pivot wider hacemos más ancha la tabla separando las variables tmax y tmin
+
+weather_tidy <- raw %>%
+  pivot_longer(cols = d1:d31,names_to = "day",values_to = "value",values_drop_na = TRUE) %>%
+  mutate(day = as.numeric(gsub("d", "", day))) %>%
+  pivot_wider(names_from = element,values_from = value)
+
+weather_tidy
 ```
 
 Como se observa, además de las variables `id`, `year` y `month`, tiene variables en las columnas `d1` a `d31` que deberían corresponder a una única variable `dia`, y en las filas, `tmin` y `tmax` deberían estar como columnas. Fíjate además que la columna `element` no es una variable, sino que almacena nombres de variables.
@@ -268,7 +313,18 @@ Para obtener la versión *tidy* primero juntamos todos los días en una variable
 Obtén la versión *tidy* del conjunto de datos `weather` utilizando las funciones `pivot_longer` y `pivot_wider`. Además cambiaremos las columnas `year`, `month` y `dia` por una única variable `fecha`. Para que la operación `pivot_wider` no de error tendremos que eliminar los NA's cuando usemos `pivot_longer`.
 
 ```{r}
+load('data/weather.Rdata')
 
+#en el anterior apartado ya habíamos pasado a numerico el dia y quitado los na, asi que solo queda añadir en el mutate la fecha, y aunque no lo dice explicitamente vamos a quitar las columnas de dia mes y año
+
+weather_tidy <- raw %>%
+  pivot_longer(cols = d1:d31,names_to = "day",values_to = "value",values_drop_na = TRUE) %>%
+  mutate(day = as.numeric(gsub("d", "", day)),fecha = as.Date(paste(year, month, day, sep = "-"))) %>%
+  select(id, fecha, element, value) %>%
+  pivot_wider(names_from = element,values_from = value)
+
+
+weather_tidy
 
 ```
 
@@ -314,7 +370,11 @@ load("./data/VuelosNY.Rdata")
 Muestra las primeras muestras de ambos data frames para hacerte una idea de las variables que contienen. ¿Qué diferencia existe entre la información mostrada en ambos data frames?
 
 ```{r }
+#Los datasets son bastante diferentes, uno te da datos de vuelos en si, como horas de salida, retrasos, etc, mientras que el otro te da datos de aviones como el modelo, el motor, etc. Sin embargo, lo que tienen en comun es que en ambas tablas pone la matrícula.
 
+head(flights)
+
+head(planes)
 ```
 
 ### Ejercicio 6
@@ -325,7 +385,22 @@ En nuestro estudio queremos aplicar una serie de criterios de exclusión sobre l
 
 ```{r }
 
+#utilizamos filter para filtrar primero por el fabricante, negandolo y utilizando la interrogacion para posibles variaciones, y luego por asientos
 
+planes.f <- planes %>%
+  filter(!grepl("mcdonn?ell\\s+douglas", manufacturer, ignore.case = TRUE)) %>%
+  filter(between(seats, 90, 210))
+
+
+
+planes.f <- planes.f %>%
+  mutate(
+    manufacturer = if_else(
+      grepl("airbus", manufacturer, ignore.case = TRUE), 
+      "AIRBUS COMP", 
+      manufacturer
+    )
+  )
 
 ```
 
