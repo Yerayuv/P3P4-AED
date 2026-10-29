@@ -568,16 +568,49 @@ Queremos averiguar si existe algún tipo de relación entre el retraso de los vu
 
 ```{r }
 library(readr)
+#selecciona las variables code y airline
+
 IATA_code <- read_delim("data/IATA_code.csv",delim = "\t", escape_double = FALSE, trim_ws = TRUE)%>%
 select("IATA code","IATA airlines")
 names(IATA_code)<-c('code','airline')
+
+# separa el code en otras dos variables, y borra la primera
  
 IATA_code<-IATA_code%>%tidyr::separate(col=code,into=c('borrar','carrier'),sep=' +[–] +')%>%select(-borrar)
+
 library(readxl)
-IATA_ICAO <- read_excel("data/Bansard-airlines-codes-IATA-ICAO.xlsx")%>%select(`Airline Name`,`IATA Designator`)%>%rename(carrierName=`Airline Name`,carrier=`IATA Designator`) 
+
+# Ahora lee un excel y vuelve a quedarse con dos columnas, renombrandolas
+
+IATA_ICAO <- read_excel("data/Bansard-airlines-codes-IATA-ICAO.xlsx")%>%select(`Airline Name`,`IATA Designator`)%>%rename(carrierName=`Airline Name`,carrier=`IATA Designator`)
+
+# Ahora le incorpora a flights la informacion nueva con un left join y finalmente con un summarize consigue calcular los retrasos de cada aerolinea ordenado por los retrasos de salida
  
 flights<-left_join(flights,IATA_ICAO,by='carrier')
 flights%>%filter(!is.na(dep_delay),!is.na(arr_delay))%>%left_join(planes,by='tailnum')%>%group_by(carrierName)%>%summarize(RetSal=mean(dep_delay,na.rm=TRUE),RetLle=mean(arr_delay,na.rm=TRUE))%>%arrange(desc(RetSal))
+
+# a partir de esta idea, creamos el dataframe y hacemos leftjoin de planes. utilizamos la cadena de !is.na que se usa en el codigo de antes pero adaptado y ahora agrupamos por manufacturer. Despues hacemos el summarize de antes
+
+retrasos_fabricante <- flights %>%
+  left_join(planes, by = "tailnum") %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay), !is.na(manufacturer)) %>%
+  group_by(manufacturer) %>%
+  summarize(RetSal = mean(dep_delay, na.rm = TRUE),RetLle = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(desc(RetSal))
+
+#ahora vemos los 2 que mas se retrasan en cada caso
+
+retrasos_fabricante %>%
+  head(2)
+
+#Bombardier y boeing
+
+retrasos_fabricante %>% 
+  arrange(desc(RetLle)) %>% 
+  head(2)
+
+#bombardier y airbus
+
 ```
 
 ### Ejercicio Extra 5
