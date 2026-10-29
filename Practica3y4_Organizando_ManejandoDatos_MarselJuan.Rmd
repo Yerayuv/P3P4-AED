@@ -625,13 +625,58 @@ library(ggplot2)
 -   Representa los boxplots de las variables relacionadas con el retraso en la llegada y en la salida (las que terminan con la palabra `delay`) agrupadas por compañía aérea (variable `carrier`) dibujando en dos colores diferentes cada tipo de retraso: tendrás que modificar el data frame con la función `pivot_longer` para crear una nueva variable que indique el tipo de retraso (llegada y salida) que sirva para colorear agrupando por cada tipo de retraso.
 
 ```{r }
+#primero arreglamos los datos seleccionando lo que no tiene na con filter y haiend el pivot longer para separar cada uno y representarlo con una sola capa de ggplot
 
+flights_ggplot<- flights %>%
+  select(carrier, dep_delay, arr_delay) %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay)) %>%
+  pivot_longer(cols = c(dep_delay, arr_delay),names_to = "tipo_retraso",values_to = "minutos_retraso")
+
+# generamos el ggplot ajustando el eje y
+
+ggplot(flights_ggplot, aes(x = carrier, y = minutos_retraso, fill = tipo_retraso))+
+  geom_boxplot(outlier.shape = NA)+
+  coord_cartesian(ylim = c(-50, 100)) +
+  labs(
+    title = "Retrasos",
+    x = "Compañía Aérea (carrier)",
+    y = "Retraso (minutos)",
+    fill = "Tipo de Retraso"
+  ) +
+  theme_minimal()
 
 ```
 
 -   Representa un gráfico de barras que contenga, para cada compañía aérea (`carrier`), el retraso medio de llegadas, de salidas y el retraso global (nueva variable con el promedio del retraso de salida y el retraso de llegadas). El eje $x$ representará la compañía aérea y el eje $y$ el retraso. Las barras de cada tipo de retraso (llegadas, salidas y global) tendrán un color de relleno diferente (tendrás que modificar el data frame con la función `pivot_longer` para crear una nueva variable que indique el tipo de retraso) y se posicionarán una junto a la otra (no apiladas). No olvides añadir etiquetas en los ejes $x$ e $y$.
 
 ```{r }
+
+# de nuevo preparamos los datos, descartando na y agrupando por compañias aereas. con el summarise calculamos los retrasos medios y luego en mutate calculamos el global, para luego hacer lo mismo de antes con el pivot longer
+carrier_delays <- flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay)) %>%
+  group_by(carrier) %>%
+  summarise(
+    Salida = mean(dep_delay, na.rm = TRUE),
+    Llegada = mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  mutate(Global = (Salida + Llegada) / 2)%>%
+  pivot_longer(
+    cols = c(Salida, Llegada, Global),
+    names_to = "tipo_retraso",
+    values_to = "retraso_medio"
+  )
+
+
+# generamos el ggplot igual que antes pero con barras, con algunos ajustes adicionales para que se vea bien
+ggplot(carrier_delays, aes(x = carrier, y = retraso_medio, fill = tipo_retraso)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Retraso medio por Compañía Aérea",
+    x = "Compañía Aérea",
+    y = "Retraso medio",
+    fill = "Tipo de Retraso"
+  ) +
+  theme_minimal()
 
 
 ```
