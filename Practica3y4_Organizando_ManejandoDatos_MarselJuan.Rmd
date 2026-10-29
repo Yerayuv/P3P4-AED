@@ -461,6 +461,13 @@ Utilizando las funciones `group_by`, `summarise` y `filter`, crea un data frame 
 
 ```{r }
 
+#en la cadena de pipes lo primero que debemos hacer es quitar los na. A continuacion agrupamos por el numero de matricula, para asi poder hcer recuento del numero de vuelos distancia media, etc. luego utilizamos summarisepara hacer los cálculos y ponemos na.rm true porque solo hemos quitado los na de las matriculas
+
+Distances_plane <- flights %>%
+  filter(!is.na(tailnum)) %>%
+  group_by(tailnum) %>%
+  summarise(Num_flights = n(),Mean_distance = mean(distance, na.rm = TRUE), Total_distance = sum(distance, na.rm = TRUE))
+
 ```
 
 # Ejercicios Extra
