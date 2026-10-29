@@ -203,6 +203,9 @@ Para convertir este conjunto a formato *tidy* tendremos que agrupar todas las co
 Convierte el dataset `pew_religion` a formato *tidy* usando `gather`. La columna `income` debe contener una variable de tipo `factor`.
 
 ```{r}
+
+#con gather juntamos las columnas de ingresos omitiendo la religion, y con mutate hacemos esta nueva columna de tipo factor
+
 load('data/pew_religion.Rdata')
 
 pew_tidy <- pew_religion %>%
@@ -216,6 +219,8 @@ pew_tidy
 Otro ejemplo usando el conjunto de datos `Billboard` que muestra cuando una canción entró en el top 100.
 
 ```{r load billboard}
+#utilizando gather juntamos las columnas de semanas
+
 load('data/billboard.Rdata')
 head(raw[, 1:12])
 billboard_tidy <- raw %>%
@@ -235,6 +240,9 @@ Obtén la versión *tidy* de este conjunto de datos usando `pivot_longer`.
 Consejo: puedes eliminar el prefijo `wk` de las semanas mediante el argumento `names_prefix`. Opcionalmente puedes crear una columna `date` a partir de `date.entered`, sumando las semanas transcurridas desde la fecha de entrada en lista.
 
 ```{r}
+
+#utilizamos pivot longer para juntar todas las columnas de semanas, para luego transformar con mutate en numerico y fecha sumando las semanas
+
 load('data/billboard.Rdata')
 
 billboard_tidy <- raw %>%
@@ -559,21 +567,17 @@ Queremos averiguar si existe algún tipo de relación entre el retraso de los vu
 ```
 
 ```{r }
-
-# ##EXTRA incluye IATA code
-# 
-# 
-# #library(readr)
-# # IATA_code <- read_delim("data/IATA_code.csv",delim = "\t", escape_double = FALSE, trim_ws = TRUE)%>%
-# #   select("IATA code","IATA airlines")
-# # names(IATA_code)<-c('code','airline')
-# # 
-# # IATA_code<-IATA_code%>%tidyr::separate(col=code,into=c('borrar','carrier'),sep=' +[–] +')%>%select(-borrar)
-# library(readxl)
-# IATA_ICAO <- read_excel("data/Bansard-airlines-codes-IATA-ICAO.xlsx")%>%select(`Airline Name`,`IATA Designator`)%>%rename(carrierName=`Airline Name`,carrier=`IATA Designator`) 
-# 
-# flights<-left_join(flights,IATA_ICAO,by='carrier')
-# flights%>%filter(!is.na(dep_delay),!is.na(arr_delay))%>%left_join(planes,by='tailnum')%>%group_by(carrierName)%>%summarize(RetSal=mean(dep_delay,na.rm=TRUE),RetLle=mean(arr_delay,na.rm=TRUE))%>%arrange(desc(RetSal))
+library(readr)
+IATA_code <- read_delim("data/IATA_code.csv",delim = "\t", escape_double = FALSE, trim_ws = TRUE)%>%
+select("IATA code","IATA airlines")
+names(IATA_code)<-c('code','airline')
+ 
+IATA_code<-IATA_code%>%tidyr::separate(col=code,into=c('borrar','carrier'),sep=' +[–] +')%>%select(-borrar)
+library(readxl)
+IATA_ICAO <- read_excel("data/Bansard-airlines-codes-IATA-ICAO.xlsx")%>%select(`Airline Name`,`IATA Designator`)%>%rename(carrierName=`Airline Name`,carrier=`IATA Designator`) 
+ 
+flights<-left_join(flights,IATA_ICAO,by='carrier')
+flights%>%filter(!is.na(dep_delay),!is.na(arr_delay))%>%left_join(planes,by='tailnum')%>%group_by(carrierName)%>%summarize(RetSal=mean(dep_delay,na.rm=TRUE),RetLle=mean(arr_delay,na.rm=TRUE))%>%arrange(desc(RetSal))
 ```
 
 ### Ejercicio Extra 5
